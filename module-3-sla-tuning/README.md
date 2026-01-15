@@ -115,7 +115,7 @@ Learners open Query Profile to:
 - Identify plan inefficiencies
 - This replaces traditional Spark Stage analysis.
 
-Step 4: Run Controlled Tuning Experiments
+# Step 4: Run Controlled Tuning Experiments
 Learners modify one variable at a time, such as:
 
 - spark.sql.shuffle.partitions
@@ -125,7 +125,7 @@ Learners modify one variable at a time, such as:
 
 Each change is evaluated independently.
 
-Step 5: Compare Results Against SLA
+# Step 5: Compare Results Against SLA
 Learners create a comparison:		
 
 | Configuration| Runtime  | SLA Met  |
