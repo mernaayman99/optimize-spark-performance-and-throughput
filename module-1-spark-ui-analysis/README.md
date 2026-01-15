@@ -103,3 +103,7 @@ How Spark performance issues can be detected before full UI access
 Module 2: Data Skew Optimization
 Module 3: SLA-Driven Tuning
 Course-End Project: End-to-End Optimization
+
+# Key Takeaway
+Even without full Spark UI access, Spark performance leaves fingerprints everywhere.
+This module trains learners to read those signals early—using metrics, not guesswork.
