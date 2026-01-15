@@ -1,4 +1,4 @@
-# Module 1 – Analyzing Spark Job Performance Using Databricks Query Profiles#
+# Module 1 – Analyzing Spark Job Performance Using Databricks Query Profiles
 # Module Overview
 
 In this module, learners are introduced to Spark performance analysis fundamentals using the Databricks Free Edition.
