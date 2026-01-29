@@ -17,10 +17,6 @@ df.printSchema()
 
 # COMMAND ----------
 
-df.select("customer_id", "order_number")
-
-# COMMAND ----------
-
 df.count()
 
 # COMMAND ----------
@@ -56,17 +52,3 @@ skew_demo = (
 
 skew_demo.show()
 
-# COMMAND ----------
-
-df.groupBy("customer_id").count().collect()
-
-# COMMAND ----------
-
-optimized = (
-    df.repartition(50, "customer_id")
-      .groupBy("customer_id")
-      .count()
-      .orderBy("count", ascending=False)
-)
-
-optimized.collect()
