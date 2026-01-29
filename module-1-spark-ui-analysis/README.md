@@ -1,23 +1,24 @@
 # Module 1 – Analyzing Spark Job Performance Using Databricks Query Profiles
 # Module Overview
 
-In this module, learners are introduced to Spark performance analysis fundamentals using the Databricks Free Edition.
-Because the free tier does not expose the full standalone Spark UI (Jobs, Stages, Executors tabs), learners will instead analyze real Spark execution behavior through:
+In this module, learners are introduced to Spark performance analysis fundamentals using Databricks linked to AWS.
+The focus is on understanding how Spark jobs execute at runtime and how performance bottlenecks can be identified using evidence-based metrics, not assumptions.
 
-- Databricks Query Performance panel
-- Query Profile view
-- Execution metrics surfaced directly in the notebook UI
+Depending on the Databricks account type:
 
-This module builds the analytical mindset required to diagnose Spark performance issues using metrics and evidence, even in constrained environments.
+- Paid Databricks (AWS-backed) exposes the full Spark UI
+- Databricks Free Edition exposes Query Performance and Query Profile views
+
+This module is intentionally designed so that both environments are supported, while emphasizing production-relevant Spark UI analysis.
 
 # Learning Objectives
 By the end of this module, learners will be able to:
 
-- Understand how Spark jobs execute at runtime
-- Interpret Databricks Query Performance metrics
-- Identify early indicators of shuffle overhead and task parallelism
-- Explain why seemingly simple Spark operations can behave differently
-- Prepare for deeper Spark UI analysis in later modules and real-world clusters
+- Inspect Spark execution behavior using Spark UI and Databricks execution metrics
+- Interpret task duration, shuffle I/O, and execution timing
+- Identify early indicators of shuffle overhead and parallelism imbalance
+- Explain why similar Spark operations can produce different performance outcomes
+- Build the analytical foundation required for SLA-driven tuning in later modules
 
 # Dataset Used
 Databricks Marketplace – Free Dataset
@@ -30,39 +31,53 @@ Schema: v01
 
 Table: sales_orders
 
-This dataset represents fictional retail transactions and is optimized for use in Databricks Free Edition without requiring cluster creation.
+This dataset represents fictional retail transactions and is commonly used to simulate real-world analytical workloads involving grouping, aggregation, and shuffling.
 
-# Environment Constraints (Important)
-⚠️ Databricks Free Edition Limitations
+The dataset is compatible with:
 
-Full Spark UI (Jobs / Stages / Executors tabs) is not available
+- Databricks Free Edition (serverless)
+- Paid Databricks workspaces linked to AWS
 
-No custom cluster configuration
+# Environment & Platform Context (Important)
+## Databricks on AWS (Primary Demo Environment)
 
-No executor-level tuning
+The recorded demos in this module use:
 
-✅ What is available and used in this module
+- Databricks workspace linked to AWS
+- General-purpose cluster
+
+Full Spark UI access, including:
+
+- Jobs tab
+- Stages tab
+- Task details
+- Shuffle metrics
+- Executors tab
+
+This reflects real production environments where Spark performance tuning is performed.
+
+## Databricks Free Edition (Learner-Friendly Option)
+
+Learners using the Databricks Free Edition can still follow along using:
 
 - Serverless Spark execution
 - Query Performance summary
-- Query Profile (logical & physical execution view)
--Execution timing, task count, shuffle indicators
+- Query Profile view (logical & physical plan)
+- Execution timing, task count, and shuffle indicators
 
-This module is intentionally designed to work within these constraints.
+While the classic Spark UI tabs are not exposed in Free Edition, the same execution signals are still observable through Databricks-provided performance tooling.
 
 # Hands-On Focus
-Learners will analyze Spark behavior using Databricks Query Performance, not raw Spark UI tabs.
+This module trains learners to analyze Spark performance using metrics and execution evidence.
 
-What Learners Will Observe
-
-From the notebook output and Query Profile, learners will examine:
+Learners will observe:
 
 - Total wall-clock execution time
-- Number of tasks executed
+- Task count and parallelism
 - Rows read and bytes read
-- Shuffle-related indicators
-- Execution vs optimization time split
-- Impact of repartitioning and grouping operations
+- Indicators of shuffle operations
+- Execution time vs optimization time
+- How query structure affects performance
 
 # Demo Notebook
 
@@ -72,14 +87,16 @@ spark_ui_analysis_demo.ipynb (placeholder – code used in demo)
 
 # The notebook will include:
 
-- Reading from the retail dataset
-- A baseline aggregation job
-- A repartitioned version of the same job
-- Query Performance comparison
+-Loading the retail dataset
+- Inspecting schema and baseline execution behavior
+- Running aggregation workloads
+- Introducing shuffle-heavy operations
+- Comparing execution metrics across runs
+- Navigating Spark UI or Query Profile (depending on environment)
 
 # How Learners Analyze Performance (Step-by-Step)
 
-# Step 1: Run the Query
+# Step 1: Execute a Spark Job
 Learners execute a Spark DataFrame operation such as:
 
 - groupBy
@@ -88,38 +105,45 @@ Learners execute a Spark DataFrame operation such as:
 
 This triggers Spark execution in the Databricks backend.
 
-# Step 2: Open Query Performance Panel
-After execution:
+# Step 2: Inspect Execution Metrics
+Depending on the environment:
 
-Expand “Show performance”
+### On Databricks (AWS-linked)
 
-Observe:
+Learners navigate:
 
-- Total wall-clock duration
-- Tasks completed
-- Rows read
-- Bytes read
+- Spark UI → Jobs tab
+- Spark UI → Stages tab
+- Task duration and shuffle metrics
+- Executors resource utilization
 
-# Step 3: Open Query Profile
-Learners click “See query profile” to inspect:
+### On Databricks Free Edition
 
-- Execution plan stages
-- Time spent executing vs optimizing
-- Physical operations (scan, shuffle, aggregation)
-- Evidence of parallelism and shuffle
+Learners use:
 
-This substitutes for:
-- Spark Jobs tab
-- Spark Stages tab
-- Spark SQL tab
+- “Show performance” panel
+- Query Performance summary
+- Query Profile view
+
+# Step 3: Analyze Execution Behavior
+Learners identify:
+
+- Where time is spent (execution vs optimization)
+- Evidence of shuffle operations
+- Task duration imbalance
+- Signals of limited parallelism
+
+This analysis replaces guesswork with metrics-driven reasoning.
 
 # Expected Learning Outcomes
 By the end of Module 1, learners should be able to explain:
 
-- Why a Spark job’s runtime is dominated by execution vs optimization
-- How grouping operations trigger shuffles
-- Why task count matters for parallelism
-- How Spark performance issues can be detected before full UI access
+- Why Spark job runtime is often dominated by execution rather than planning
+- How grouping operations introduce shuffle overhead
+- Why task count and partitioning affect parallelism
+- How performance issues can be detected early—before SLA violations occur
+
+Module 1 establishes the observability mindset required for Spark performance engineering.
 
 # This prepares learners for:
 
@@ -128,5 +152,6 @@ By the end of Module 1, learners should be able to explain:
 - Course-End Project: End-to-End Optimization
 
 # Key Takeaway
-Even without full Spark UI access, Spark performance leaves fingerprints everywhere.
-This module trains learners to read those signals early—using metrics, not guesswork.
+Spark performance leaves observable signals in every execution.
+
+Whether through Spark UI or Databricks Query Profiles, this module trains learners to read those signals, validate assumptions, and reason about performance like a production Spark engineer.
