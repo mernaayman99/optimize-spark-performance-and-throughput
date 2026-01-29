@@ -1,20 +1,26 @@
 # Module 3 – Tuning Spark Jobs to Meet SLA Requirements
 # Module Overview
 
-In this module, learners shift from identifying performance problems to meeting strict Service Level Agreements (SLAs). The focus is on latency-sensitive Spark workloads where execution time—not throughput alone—determines success.
+In this module, learners move from diagnosing Spark performance issues to actively tuning Spark jobs to meet strict Service Level Agreements (SLAs).
 
-Using the Databricks Free Edition, learners will evaluate Spark job execution behavior through Query Performance metrics and Query Profiles, run controlled configuration experiments at the session level, and make evidence-based tuning decisions.
+The focus is on latency-sensitive workloads, where end-to-end execution time determines success—not throughput alone.
 
-This module mirrors real production scenarios where engineers must balance speed, stability, and cost, often under platform constraints.
+This module uses a Databricks workspace linked to AWS, allowing learners to work with the full Spark UI (Jobs, Stages, Executors, SQL tabs) and perform evidence-based tuning using real execution metrics.
+
+Learners practice the same workflow used by production Spark engineers:
+observe → hypothesize → tune → validate against SLA.
+
+⚠️ Learners using Databricks Free Edition can still follow the tuning logic conceptually using Query Performance and Query Profile, but the primary demonstrations in this module rely on Spark UI.
 
 # Learning Objectives
 By the end of this module, learners will be able to:
 
 - Define and reason about SLAs in Spark workloads
-- Identify latency bottlenecks using execution metrics
+- Identify latency bottlenecks using Spark UI metrics
+- Interpret task duration, shuffle I/O, executor CPU and memory usage
 - Understand how parallelism, memory pressure, and shuffle behavior affect runtime
 - Perform controlled Spark tuning experiments
-- Select configurations that meet SLA targets and explain trade-offs
+- Select configurations that meet SLA targets and justify trade-offs
 
 # Dataset Used
 Databricks Marketplace – Free Dataset
@@ -27,52 +33,69 @@ Schema: v01
 
 Table: sales_orders
 
-The dataset supports aggregation and join workloads suitable for SLA-driven analysis without requiring large cluster resources.
+This dataset supports realistic aggregation and shuffle-heavy workloads suitable for SLA-driven tuning without requiring large clusters.
 
 # Environment Constraints (Important)
 
-⚠️ Databricks Free Edition Limitations
+Primary Environment (Used in Demo)
 
-- No access to cluster sizing (executors, cores, memory)
-- No Spark UI Jobs / Stages / Executors tabs
-- No persistent cluster configuration
+✅ Databricks workspace linked to AWS
 
-✅ What learners can tune
+✅ Full Spark UI access:
 
-- Session-level Spark SQL parameters
-- Partitioning strategies
-- Query execution patterns
-- Controlled transformations affecting shuffle behavior
+- Jobs tab
+- Stages tab
+- Task details
+- Shuffle metrics
+- Executors tab
 
-All analysis is performed using:
+✅ Ability to:
 
-- Databricks Query Performance panel
-- Query Profile execution plans
-- Wall-clock execution time
+- Modify Spark configurations at session or cluster level
+- Observe executor-level CPU, memory, and GC behavior
+
+Free Edition Note (For Learners)
+
+⚠️ Databricks Free Edition limitations:
+
+- No full Spark UI (Jobs / Stages / Executors)
+- No cluster-level executor tuning
+
+Learners on Free Edition can still:
+
+- Follow the tuning logic
+- Use Query Performance and Query Profile
+- Observe wall-clock runtime and execution plan changes
 
 # Hands-On Focus
+
 Learners will:
 
 - Establish a baseline runtime that violates an SLA
-- Diagnose the dominant latency bottleneck
-- Apply incremental tuning changes
-- Measure impact after each experiment
-- Select a configuration that meets the SLA
-- SLA Scenario
+- Identify the dominant latency bottleneck using Spark UI
+- Run controlled tuning experiments
+- Measure performance impact after each change
+- Validate whether the SLA is met
+- Explain trade-offs between performance, stability, and cost
+
+SLA Scenario
 
 You are working as a Data Platform Engineer at a financial analytics company.
 
-A Spark job that computes risk-related aggregations must complete in under 60 seconds to support downstream alerting systems. Recent runs take 80–95 seconds, causing delayed alerts and compliance risk.
+A Spark job that computes risk-related aggregations must complete in under 60 seconds to support downstream alerting systems.
 
-You are responsible for tuning the job so it consistently meets the SLA while avoiding unnecessary resource usage.
+Recent runs take 80–95 seconds, causing delayed alerts and compliance risk.
+
+Your task is to tune the job so it consistently meets the SLA, without unnecessary over-provisioning.
 
 # Key Concepts Covered
 
 - SLA vs throughput optimization
-- Why “faster” is not always “better”
-- Latency amplification caused by shuffle stages
-- Trade-offs between parallelism and overhead
-- Cost-aware performance tuning
+- Why reducing shuffle latency is often the fastest win
+- How stage-level delays amplify end-to-end latency
+- Executor underutilization vs memory pressure
+- Cost-aware tuning decisions
+- Evidence-based performance validation
 
 # Demo Notebook 
 📁 notebooks/
@@ -81,39 +104,50 @@ sla_tuning_demo.ipynb (placeholder – code used in demo)
 
 The notebook will include:
 - Baseline execution
-- Session-level tuning experiments
-- Runtime tracking
-- Query Profile inspection
+- Spark UI inspection (Jobs, Stages, Executors)
+- Controlled tuning experiments
+- Runtime comparison
 - SLA validation
 
 # How Learners Tune for SLA (Step-by-Step)
 # Step 1: Establish the SLA Baseline
+
 Learners run a baseline aggregation and record:
 
-- Total wall-clock runtime
-- Rows read
-- Query execution time
-- Task count
-- The result fails the SLA.
+- Total job runtime (Jobs tab)
+- Slowest stage duration (Stages tab)
+- Maximum task duration
+- Shuffle read/write size
+- Executor CPU and memory utilization
 
-# Step 2: Inspect Query Performance
-From “Show performance”, learners analyze:
+➡️ Result: SLA violation confirmed.
+# Step 2: Identify the Latency Bottleneck
 
-- Execution vs optimization time
-- Long-running operations
-- Query latency breakdown
-- They identify whether the delay is caused by:
+Using Spark UI, learners inspect:
+
+- Jobs tab → total runtime
+- Stages tab → longest-running stage
+- Task details → straggler tasks
+- Shuffle metrics → heavy shuffle stages
+- Executors tab → CPU imbalance, GC time, memory pressure
+
+Learners determine whether the delay is caused by:
+
 - Excessive shuffle
-- Under-parallelization
-- Inefficient partitioning
+- Poor parallelism
+- Memory pressure
+- Executor imbalance
 
-# Step 3: Examine Query Profile
-Learners open Query Profile to:
+# Step 3: Run Controlled Tuning Experiments
 
-- Locate shuffle boundaries
-- Inspect aggregation stages
-- Identify plan inefficiencies
-- This replaces traditional Spark Stage analysis.
+Learners change one variable at a time, such as:
+
+- spark.sql.shuffle.partitions
+- Repartitioning strategy
+- Executor memory
+- Cores per executor
+
+Each experiment is evaluated independently.
 
 # Step 4: Run Controlled Tuning Experiments
 Learners modify one variable at a time, such as:
@@ -134,19 +168,25 @@ Learners create a comparison:
 |Experiment 1  | 68s      |❌ No     |
 |Experiment 2  | 54s      |❌ No     |
 
-
+Spark UI metrics are used as evidence—not assumptions.
 
 # By the end of Module 3, learners will be able to:
 
-- Tune Spark jobs with SLA goals in mind
-- Defend configuration choices using metrics
-- Avoid over-provisioning as a default solution
+-Tune Spark jobs with SLA goals in mind
+- Identify which configuration changes actually matter
+- Defend tuning decisions using Spark UI metrics
+- Avoid blindly adding resources
 - Think like production-focused Spark engineers
 
 # Key Takeaway
 
 Meeting an SLA is not about making Spark “as fast as possible.”
-It is about making it predictably fast enough—with evidence, control, and discipline.
+
+It’s about making it predictably fast enough, using:
+
+- Evidence
+- Controlled experiments
+- Clear trade-off analysis
 
 # How This Module Feeds the Course-End Project
 
